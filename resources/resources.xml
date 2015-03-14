@@ -1,0 +1,6 @@
+<resources>
+    <string id="AppName">PongScoreboard</string>
+
+    <bitmap id="LauncherIcon" filename="images/launcher_icon.gif" />
+    <bitmap id="id_pong" filename="images/pong.png" />
+</resources>

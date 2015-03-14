@@ -1,0 +1,444 @@
+using Toybox.Ant     as Ant;
+using Toybox.WatchUi as Ui;
+using Toybox.System  as Sys;
+
+module PongModule
+{
+    // Message offset of message id
+    const OFFSET_MSG_ID        = 0;
+    // Size of a byte in bits
+    const SIZE_OF_BYTE         = 8;
+    // Used to mask single byte out of an integer
+    const BYTE_MASK            = 0xFF;
+    // Invalid player score
+    const INVALID_PLAYER_SCORE = -1;
+
+    // Pong Player
+    enum
+    {
+        PONG_PLAYER_0       = 0,
+        PONG_PLAYER_1       = 1,
+        PONG_PLAYER_INVALID = 2
+    }
+
+    // Pong Game State
+    enum
+    {
+        PONG_GAME_STATE_SEARCH    = 0,
+        PONG_GAME_STATE_IDLE      = 1,
+        PONG_GAME_STATE_DATA      = 2,
+        PONG_GAME_STATE_READY     = 3,
+        PONG_GAME_STATE_GAME      = 4,
+        PONG_GAME_STATE_GAME_OVER = 5,
+        PONG_GAME_STATE_INVALID   = 6
+    }
+
+    // Pong Message definitions
+
+    // Sent when the radio is first activiated. Used for pairing.
+    class IdleMessage
+    {
+        // Message structure
+        static const MSG_ID                   = 0x01;
+        static const OFFSET_STATUS            = 5;
+        static const STATUS_MASK              = 0x01;
+        static const OFFSET_MESSAGE_COUNT_L   = 6;
+        static const OFFSET_MESSAGE_COUNT_H   = 7;
+
+        // Master status
+        var isMasterReady;
+        // Message count
+        var messageCount;
+
+        // Parses a raw ANT message
+        function parse( payload )
+        {
+            isMasterReady  = ( payload[OFFSET_STATUS] & STATUS_MASK ) ? true : false;
+            messageCount   = ( payload[OFFSET_MESSAGE_COUNT_L] | ( payload[OFFSET_MESSAGE_COUNT_H] << SIZE_OF_BYTE ) );
+        }
+    }
+
+    // Transmits game board parameters
+    class DataMessage
+    {
+        // Message structure
+        static const MSG_ID                   = 0x02;
+        static const OFFSET_STATUS            = 5;
+        static const STATUS_MASK              = 0x01;
+        static const OFFSET_MESSAGE_COUNT_L   = 6;
+        static const OFFSET_MESSAGE_COUNT_H   = 7;
+
+        // Master status
+        var isMasterReady;
+        // Message count
+        var messageCount;
+
+        // Parses a raw ANT message
+        function parse( payload )
+        {
+            isMasterReady  = ( payload[OFFSET_STATUS] & STATUS_MASK ) ? true : false;
+            messageCount   = ( payload[OFFSET_MESSAGE_COUNT_L] | ( payload[OFFSET_MESSAGE_COUNT_H] << SIZE_OF_BYTE ) );
+        }
+    }
+
+    // Transmits game player parameters
+    class ReadyMessage
+    {
+        // Message structure
+        static const MSG_ID                   = 0x03;
+        static const OFFSET_PLAYER_0_SCORE    = 1;
+        static const OFFSET_PLAYER_1_SCORE    = 2;
+        static const OFFSET_PLAYER_0_STATUS   = 3;
+        static const OFFSET_PLAYER_1_STATUS   = 4;
+        static const PLAYER_STATUS_NOT_READY  = 0x00;
+        static const PLAYER_STATUS_READY      = 0x01;
+        static const OFFSET_MESSAGE_COUNT_L   = 6;
+        static const OFFSET_MESSAGE_COUNT_H   = 7;
+
+        // Score of Player 0
+        var player0Score;
+        // Score of Player 1
+        var player1Score;
+        // Status of Player 0
+        var isPlayer0Ready;
+        // Status of Player 1
+        var isPlayer1Ready;
+        // Message count
+        var messageCount;
+
+        // Parses a raw ANT message
+        function parse( payload )
+        {
+            player0Score    = payload[OFFSET_PLAYER_0_SCORE];
+            player1Score    = payload[OFFSET_PLAYER_1_SCORE];
+            isPlayer0Ready  = ( payload[OFFSET_PLAYER_0_STATUS] & PLAYER_STATUS_READY ) ? true : false;
+            isPlayer0Ready  = ( payload[OFFSET_PLAYER_1_STATUS] & PLAYER_STATUS_READY ) ? true : false;
+            messageCount    = ( payload[OFFSET_MESSAGE_COUNT_L] | ( payload[OFFSET_MESSAGE_COUNT_H] << SIZE_OF_BYTE ) );
+        }
+
+        // Converts this message to raw payload format
+        function toPayload()
+        {
+            var payload = new [8];
+
+            payload[OFFSET_MSG_ID]          = MSG_ID;
+            payload[OFFSET_PLAYER_0_SCORE]  = player0Score;
+            payload[OFFSET_PLAYER_1_SCORE]  = player1Score;
+            payload[OFFSET_PLAYER_0_STATUS] = ( isPlayer0Ready ) ? PLAYER_STATUS_READY : PLAYER_STATUS_NOT_READY;
+            payload[OFFSET_PLAYER_1_STATUS] = ( isPlayer1Ready ) ? PLAYER_STATUS_READY : PLAYER_STATUS_NOT_READY;
+            payload[OFFSET_MESSAGE_COUNT_L] = BYTE_MASK & ( messageCount );
+            payload[OFFSET_MESSAGE_COUNT_H] = BYTE_MASK & ( messageCount >> SIZE_OF_BYTE );
+
+            return payload;
+        }
+    }
+
+    // Transmits runtime game parameters
+    class GameMessage
+    {
+        // Message structure
+        static const MSG_ID                = 0x04;
+        static const OFFSET_GAME_STATUS    = 7;
+        static const GAME_IN_PROGRESS_MASK = 0x01;
+        static const PLAYER_0_SCORED_MASK  = 0x02;
+        static const PLAYER_1_SCORED_MASK  = 0x04;
+        static const PLAYER_0_WON_MASK     = 0x08;
+        static const PLAYER_1_WON_MASK     = 0x10;
+
+        // Game progress
+        var isGameInProgress;
+        // Player 0 scored
+        var player0Scored;
+        // Player 1 scored
+        var player1Scored;
+        // Player 0 won
+        var player0Won;
+        // Player 1 won
+        var player1Won;
+
+        // Parses a raw ANT message
+        function parse( payload )
+        {
+            isGameInProgress  = ( payload[OFFSET_GAME_STATUS] & GAME_IN_PROGRESS_MASK ) ? true : false;
+            player0Scored     = ( payload[OFFSET_GAME_STATUS] & PLAYER_0_SCORED_MASK ) ? true : false;
+            player1Scored     = ( payload[OFFSET_GAME_STATUS] & PLAYER_1_SCORED_MASK ) ? true : false;
+            player0Won        = ( payload[OFFSET_GAME_STATUS] & PLAYER_0_WON_MASK ) ? true : false;
+            player1Won        = ( payload[OFFSET_GAME_STATUS] & PLAYER_1_WON_MASK ) ? true : false;
+        }
+    }
+
+    class PongGame extends Ant.GenericChannel
+    {
+        // Offsets for ANT Response Messsages
+        static const OFFSET_ANT_RESPONSE_ID   = 0;
+        static const OFFSET_ANT_RESPONSE_CODE = 1;
+        // Channel configuration defaults
+        static const DEVICE_NUMBER            = 0;
+        static const DEVICE_TYPE              = 1;
+        static const FREQUENCY                = 66;
+        static const PERIOD                   = 3277;
+        static const SEARCH_TIMEOUT_HP        = 2;
+        static const SEARCH_TIMEOUT_LP        = 10;
+        static const SEARCH_THRESHOLD         = 0;
+        static const TRANS_TYPE               = 0;
+
+        // Private game variables
+        var mChosenPlayer;
+        var mGameState;
+        var mPastGameState;
+        var mPastPlayer0Score;
+        var mPastPlayer1Score;
+        var mPlayer0Score;
+        var mPlayer1Score;
+        var mWinningPlayer;
+
+        function initialize()
+        {
+            var channelAssignment;
+            var deviceConfiguration;
+
+            // Get the channel
+            channelAssignment = new Ant.ChannelAssignment(
+                Ant.CHANNEL_TYPE_RX_NOT_TX,
+                Ant.NETWORK_PUBLIC );
+            GenericChannel.initialize(
+                method(:onMessage),
+                channelAssignment );
+
+            // Set the configuration
+            deviceConfiguration = new Ant.DeviceConfig( {
+                :deviceNumber => DEVICE_NUMBER,
+                :deviceType => DEVICE_TYPE,
+                :transmissionType => TRANS_TYPE,
+                :messagePeriod => PERIOD,
+                :radioFrequency => FREQUENCY,
+                :searchTimeoutLowPriority => SEARCH_TIMEOUT_LP,
+                :searchTimeoutHighPriority => SEARCH_TIMEOUT_HP,
+                :searchThreshold => SEARCH_THRESHOLD } );
+            GenericChannel.setDeviceConfig( deviceConfiguration );
+
+            // Set initial game state
+            mGameState         = PONG_GAME_STATE_INVALID;
+            mChosenPlayer      = PONG_PLAYER_INVALID;
+            mPlayer0Score      = INVALID_PLAYER_SCORE;
+            mPlayer1Score      = INVALID_PLAYER_SCORE;
+            mPastGameState     = PONG_GAME_STATE_INVALID;
+            mPastPlayer0Score  = INVALID_PLAYER_SCORE;
+            mPastPlayer1Score  = INVALID_PLAYER_SCORE;
+            mWinningPlayer     = PONG_PLAYER_INVALID;
+        }
+
+        function onMessage( antMessage )
+        {
+            //Parse the payload
+            var payload    = antMessage.getPayload();
+            var messageId  = payload[OFFSET_MSG_ID] & BYTE_MASK;
+
+            if( Ant.MSG_ID_BROADCAST_DATA == antMessage.messageId )
+            {
+                //Process the message if we can
+                if( IdleMessage.MSG_ID == messageId )
+                {
+                    processIdleMessage( payload );
+                }
+                else if( DataMessage.MSG_ID == messageId )
+                {
+                    processDataMessage( payload );
+                }
+                else if( ReadyMessage.MSG_ID == messageId )
+                {
+                    processReadyMessage( payload );
+                }
+                else if( GameMessage.MSG_ID == messageId )
+                {
+                    processGameMessage( payload );
+                }
+            }
+            else if( Ant.MSG_ID_CHANNEL_RESPONSE_EVENT == antMessage.messageId )
+            {
+                if( Ant.MSG_ID_RF_EVENT == ( payload[OFFSET_ANT_RESPONSE_ID] & BYTE_MASK ) )
+                {
+                    if( Ant.MSG_CODE_EVENT_RX_SEARCH_TIMEOUT == ( payload[OFFSET_ANT_RESPONSE_CODE] & BYTE_MASK ) )
+                    {
+                        // Channel closed, re-open
+                        startGame();
+                    }
+                }
+            }
+            //Update the ui
+            Ui.requestUpdate();
+        }
+
+        function startGame()
+        {
+            // Reset game data
+            mGameState         = PONG_GAME_STATE_SEARCH;
+            mPlayer0Score      = INVALID_PLAYER_SCORE;
+            mPlayer1Score      = INVALID_PLAYER_SCORE;
+            mPastGameState     = PONG_GAME_STATE_SEARCH;
+            mPastPlayer0Score  = INVALID_PLAYER_SCORE;
+            mPastPlayer1Score  = INVALID_PLAYER_SCORE;
+            mWinningPlayer = PONG_PLAYER_INVALID;
+            // Open the channel
+            GenericChannel.open();
+        }
+
+        function stopGame()
+        {
+            mChosenPlayer  = PONG_PLAYER_INVALID;
+            mGameState     = PONG_GAME_STATE_INVALID;
+            mPastGameState = PONG_GAME_STATE_INVALID;
+            GenericChannel.close();
+        }
+
+        function getGameState()
+        {
+            return mGameState;
+        }
+
+        function getPastGameState()
+        {
+            return mPastGameState;
+        }
+
+        function getPlayer()
+        {
+            return mChosenPlayer;
+        }
+
+        function setPlayer( player )
+        {
+            mChosenPlayer = player;
+        }
+
+        function getPastPlayerScore( player )
+        {
+            var score;
+
+            score = INVALID_PLAYER_SCORE;
+
+            if( PONG_PLAYER_0 == player )
+            {
+                score = mPastPlayer0Score;
+            }
+            else if( PONG_PLAYER_1 == player )
+            {
+                score = mPastPlayer1Score;
+            }
+            return score;
+        }
+
+        function getPlayerScore( player )
+        {
+            var score;
+
+            score = INVALID_PLAYER_SCORE;
+
+            if( PONG_PLAYER_0 == player )
+            {
+                score = mPlayer0Score;
+            }
+            else if( PONG_PLAYER_1 == player )
+            {
+                score = mPlayer1Score;
+            }
+            return score;
+        }
+
+        function getWinningPlayer()
+        {
+            return mWinningPlayer;
+        }
+
+        hidden function processIdleMessage( payload )
+        {
+            // Declare variables
+            var pongMessage;
+
+            // Initialize variables
+            pongMessage = new IdleMessage();
+
+            // Parse message
+            pongMessage.parse( payload );
+
+            // Update game state
+            mPastGameState = mGameState;
+            mGameState     = PONG_GAME_STATE_IDLE;
+        }
+
+        hidden function processDataMessage( payload )
+        {
+            // Declare variables
+            var pongMessage;
+
+            // Initialize variables
+            pongMessage = new DataMessage();
+
+            // Parse message
+            pongMessage.parse( payload );
+
+            // Update game state
+            mPastGameState = mGameState;
+            mGameState     = PONG_GAME_STATE_DATA;
+        }
+
+        hidden function processReadyMessage( payload )
+        {
+            // Declare variables
+            var pongMessage;
+
+            // Initialize variables
+            pongMessage = new ReadyMessage();
+
+            // Parse message
+            pongMessage.parse( payload );
+
+            // Set initial player scores
+            mPlayer0Score     = pongMessage.player0Score;
+            mPlayer1Score     = pongMessage.player1Score;
+            mPastPlayer0Score = pongMessage.player0Score;
+            mPastPlayer1Score = pongMessage.player1Score;
+
+            // Update game state
+            mPastGameState = mGameState;
+            mGameState     = PONG_GAME_STATE_READY;
+        }
+
+        hidden function processGameMessage( payload )
+        {
+            // Declare variables
+            var pongMessage;
+
+            // Initialize variables
+            pongMessage = new GameMessage();
+
+            // Parse message
+            pongMessage.parse( payload );
+
+            // Update player scores
+            mPastPlayer0Score = mPlayer0Score;
+            mPastPlayer1Score = mPlayer1Score;
+            if( pongMessage.player0Scored )
+            {
+                mPlayer0Score++;
+            }
+            if( pongMessage.player1Scored )
+            {
+                mPlayer1Score++;
+            }
+
+            // Update game state
+            mPastGameState = mGameState;
+            if( pongMessage.isGameInProgress )
+            {
+                mGameState = PONG_GAME_STATE_GAME;
+            }
+            else
+            {
+                mGameState     = PONG_GAME_STATE_GAME_OVER;
+                // Get winning player
+                mWinningPlayer = ( pongMessage.player0Won ) ? PONG_PLAYER_0 : PONG_PLAYER_1;
+            }
+        }
+    }
+}

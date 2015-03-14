@@ -1,0 +1,4 @@
+<menu id="PlayerMenu">
+    <menu-item id="item_1">Player 0</menu-item>
+    <menu-item id="item_2">Player 1</menu-item>
+</menu>

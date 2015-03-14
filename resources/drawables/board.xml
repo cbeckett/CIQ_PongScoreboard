@@ -1,0 +1,4 @@
+<drawable-list id="board" x="0" y="0" foreground="Gfx.COLOR_WHITE">
+    <shape type="rectangle" x="100" y="0" height="128" width="5" />
+    <shape type="rectangle" x="0" y="30" height="5" width="256" />
+</drawable-list>

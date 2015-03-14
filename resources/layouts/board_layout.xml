@@ -1,0 +1,5 @@
+<layout id="BoardLayout">
+    <drawable id="board" />
+    <label x="48" y="0" text="Player 0" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" />
+	<label x="156" y="0" text="Player 1" color="Gfx.COLOR_WHITE" justification="Gfx.TEXT_JUSTIFY_CENTER" />
+</layout>
