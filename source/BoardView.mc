@@ -73,20 +73,27 @@ class BoardView extends Ui.View
     /////////////////////////////////////////////
     function onPoint()
     {
-        Attention.playTone( 6 );
+        Attention.playTone( Attention.TONE_LOUD_BEEP );
         Attention.vibrate( mVibrateData );
     }
 
     /////////////////////////////////////////////
     // Called when the game ends
     // Parameters:
-    //  none
+    //  ifWon - Boolean representing if user has won
     // Returns:
     //  none
     /////////////////////////////////////////////
-    function onGameEnd()
+    function onGameEnd( ifWon )
     {
-        Attention.playTone( 15 );
+        if( ifWon )
+        {
+            Attention.playTone( Attention.TONE_SUCCESS );
+        }
+        else
+        {
+            Attention.playTone( Attention.TONE_FAILURE );
+        }
         Attention.vibrate( mVibrateData );
     }
 
@@ -104,6 +111,7 @@ class BoardView extends Ui.View
         var font;
         var textDimensions;
         var textColor;
+        var ifWon;
 
         // Initialize variables
         text      = "Invalid";
@@ -139,7 +147,9 @@ class BoardView extends Ui.View
         else if( Pong.PONG_GAME_STATE_GAME_OVER == mGame.getGameState() )
         {
             // Get winning player
-            if( mGame.getPlayer() == mGame.getWinningPlayer() )
+            ifWon = ( mGame.getPlayer() == mGame.getWinningPlayer() );
+            // Set text and color
+            if( ifWon )
             {
                 text      = "Game Over - YOU WON!";
             }
@@ -147,14 +157,13 @@ class BoardView extends Ui.View
             {
                 text      = "Game Over - YOU LOST!";
             }
-
+            textColor = Gfx.COLOR_GREEN;
             // If game has just ended, notify user
             if( mGame.getGameState() != mGame.getPastGameState() )
             {
-                onGameEnd();
+                onGameEnd( ifWon );
             }
 
-            textColor = Gfx.COLOR_GREEN;
         }
         else if( Pong.PONG_GAME_STATE_INVALID == mGame.getGameState() )
         {
