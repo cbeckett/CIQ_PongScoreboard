@@ -2,14 +2,16 @@ using Toybox.WatchUi as Ui;
 using Toybox.System  as Sys;
 using PongModule     as Pong;
 
-class BoardDelegate extends Ui.BehaviorDelegate {
+// Handles user events while game is in progress
+class BoardDelegate extends Ui.BehaviorDelegate
+{
     // Stores a pointer to the game instance
     var mGame;
 
     /////////////////////////////////////////////
     // Called when object is initialized
     // Parameters:
-    //  none
+    //  game - Pointer to the game instance
     // Returns:
     //  none
     /////////////////////////////////////////////
@@ -25,12 +27,14 @@ class BoardDelegate extends Ui.BehaviorDelegate {
     // Returns:
     //  true - button event has been handled
     /////////////////////////////////////////////
-    function onMenu() {
-       // End game and go back to setup
-       mGame.stopGame();
-       mGame.release();
-       mGame = new Pong.PongGame();
-       Ui.switchToView(new SetupView( mGame ), new SetupDelegate( mGame ), Ui.SLIDE_LEFT);
+    function onMenu()
+    {
+        // End game and go back to setup
+        mGame.stopGame();
+        // This is to handle a bug in the sim where a channel could not be re-opened (1.1.0)
+        mGame.release();
+        mGame = new Pong.PongGame();
+        Ui.switchToView( new SetupView( mGame ), new SetupDelegate( mGame ), Ui.SLIDE_LEFT );
 
         return true;
     }

@@ -2,14 +2,24 @@ using Toybox.WatchUi  as Ui;
 using Toybox.Graphics as Gfx;
 using PongModule      as Pong;
 
-class BoardView extends Ui.View {
+// Displays data of game in progress
+class BoardView extends Ui.View
+{
     // Stores parameters used to control watch vibration
     var mVibrateData;
     // Stores a pointer to the game instance
     var mGame;
 
+    /////////////////////////////////////////////
+    // Called when object is initialized
+    // Parameters:
+    //  game - Pointer to the game instance
+    // Returns:
+    //  none
+    /////////////////////////////////////////////
     function initialize( game )
     {
+        // Initialize the board view data
         mGame        = game;
         mVibrateData = [
                         new Attention.VibeProfile(  25, 100 ),
@@ -22,17 +32,27 @@ class BoardView extends Ui.View {
                       ];
     }
 
-    //! Load your resources here
-    function onLayout( dc ) {
+    /////////////////////////////////////////////
+    // Initializes layout resources
+    // Parameters:
+    //  none
+    // Returns:
+    //  none
+    /////////////////////////////////////////////
+    function onLayout( dc )
+    {
         setLayout( Rez.Layouts.BoardLayout( dc ) );
     }
 
-    //! Restore the state of the app and prepare the view to be shown
-    function onShow() {
-    }
-
-    //! Update the view
-    function onUpdate( dc ) {
+    /////////////////////////////////////////////
+    // Update the view
+    // Parameters:
+    //  dc - Display context to update
+    // Returns:
+    //  none
+    /////////////////////////////////////////////
+    function onUpdate( dc )
+    {
         // First clear the display before we update it
         dc.clear();
 
@@ -44,19 +64,41 @@ class BoardView extends Ui.View {
         updateGameScores( dc );
     }
 
-    //! Called when a point is scored
-    function onPoint(key) {
+    /////////////////////////////////////////////
+    // Called when a point is scored
+    // Parameters:
+    //  none
+    // Returns:
+    //  none
+    /////////////////////////////////////////////
+    function onPoint()
+    {
         Attention.playTone( 6 );
         Attention.vibrate( mVibrateData );
     }
 
-    //! Called when the game ends
-    function onGameEnd(key) {
+    /////////////////////////////////////////////
+    // Called when the game ends
+    // Parameters:
+    //  none
+    // Returns:
+    //  none
+    /////////////////////////////////////////////
+    function onGameEnd()
+    {
         Attention.playTone( 15 );
         Attention.vibrate( mVibrateData );
     }
 
-    function updateGameState(dc) {
+    /////////////////////////////////////////////
+    // Updates the display of the game's state
+    // Parameters:
+    //  dc - Display context to update
+    // Returns:
+    //  none
+    /////////////////////////////////////////////
+    function updateGameState( dc )
+    {
         // Declare variables
         var text;
         var font;
@@ -128,6 +170,13 @@ class BoardView extends Ui.View {
         dc.drawText(dc.getWidth() / 2, dc.getHeight() - textDimensions[1], font, text, Gfx.TEXT_JUSTIFY_CENTER);
     }
 
+    /////////////////////////////////////////////
+    // Updates the display of the player's scores
+    // Parameters:
+    //  dc - Display context to update
+    // Returns:
+    //  none
+    /////////////////////////////////////////////
     function updateGameScores( dc )
     {
         // Declare variables

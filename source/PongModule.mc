@@ -2,6 +2,7 @@ using Toybox.Ant     as Ant;
 using Toybox.WatchUi as Ui;
 using Toybox.System  as Sys;
 
+// Stores classes used to represent a game instance and to parse game ANT messages
 module PongModule
 {
     // Message offset of message id
@@ -33,8 +34,6 @@ module PongModule
         PONG_GAME_STATE_INVALID   = 6
     }
 
-    // Pong Message definitions
-
     // Sent when the radio is first activiated. Used for pairing.
     class IdleMessage
     {
@@ -50,7 +49,13 @@ module PongModule
         // Message count
         var messageCount;
 
+        /////////////////////////////////////////////
         // Parses a raw ANT message
+        // Parameters:
+        //  payload - Raw ANT data payload
+        // Returns:
+        //  none
+        /////////////////////////////////////////////
         function parse( payload )
         {
             isMasterReady  = ( payload[OFFSET_STATUS] & STATUS_MASK ) ? true : false;
@@ -73,7 +78,13 @@ module PongModule
         // Message count
         var messageCount;
 
+        /////////////////////////////////////////////
         // Parses a raw ANT message
+        // Parameters:
+        //  payload - Raw ANT data payload
+        // Returns:
+        //  none
+        /////////////////////////////////////////////
         function parse( payload )
         {
             isMasterReady  = ( payload[OFFSET_STATUS] & STATUS_MASK ) ? true : false;
@@ -106,7 +117,13 @@ module PongModule
         // Message count
         var messageCount;
 
+        /////////////////////////////////////////////
         // Parses a raw ANT message
+        // Parameters:
+        //  payload - Raw ANT data payload
+        // Returns:
+        //  none
+        /////////////////////////////////////////////
         function parse( payload )
         {
             player0Score    = payload[OFFSET_PLAYER_0_SCORE];
@@ -116,7 +133,13 @@ module PongModule
             messageCount    = ( payload[OFFSET_MESSAGE_COUNT_L] | ( payload[OFFSET_MESSAGE_COUNT_H] << SIZE_OF_BYTE ) );
         }
 
-        // Converts this message to raw payload format
+        /////////////////////////////////////////////
+        // Converts self to raw payload format
+        // Parameters:
+        //  payload - Raw ANT data payload
+        // Returns:
+        //  none
+        /////////////////////////////////////////////
         function toPayload()
         {
             var payload = new [8];
@@ -156,7 +179,13 @@ module PongModule
         // Player 1 won
         var player1Won;
 
+        /////////////////////////////////////////////
         // Parses a raw ANT message
+        // Parameters:
+        //  payload - Raw ANT data payload
+        // Returns:
+        //  none
+        /////////////////////////////////////////////
         function parse( payload )
         {
             isGameInProgress  = ( payload[OFFSET_GAME_STATUS] & GAME_IN_PROGRESS_MASK ) ? true : false;
@@ -167,11 +196,13 @@ module PongModule
         }
     }
 
+    // Represents a game instance
     class PongGame extends Ant.GenericChannel
     {
         // Offsets for ANT Response Messsages
         static const OFFSET_ANT_RESPONSE_ID   = 0;
         static const OFFSET_ANT_RESPONSE_CODE = 1;
+
         // Channel configuration defaults
         static const DEVICE_NUMBER            = 0;
         static const DEVICE_TYPE              = 1;
@@ -183,15 +214,22 @@ module PongModule
         static const TRANS_TYPE               = 0;
 
         // Private game variables
-        var mChosenPlayer;
-        var mGameState;
-        var mPastGameState;
-        var mPastPlayer0Score;
-        var mPastPlayer1Score;
-        var mPlayer0Score;
-        var mPlayer1Score;
-        var mWinningPlayer;
+        hidden var mChosenPlayer;
+        hidden var mGameState;
+        hidden var mPastGameState;
+        hidden var mPastPlayer0Score;
+        hidden var mPastPlayer1Score;
+        hidden var mPlayer0Score;
+        hidden var mPlayer1Score;
+        hidden var mWinningPlayer;
 
+        /////////////////////////////////////////////
+        // Called when object is initialized
+        // Parameters:
+        //  none
+        // Returns:
+        //  none
+        /////////////////////////////////////////////
         function initialize()
         {
             var channelAssignment;
@@ -228,6 +266,13 @@ module PongModule
             mWinningPlayer     = PONG_PLAYER_INVALID;
         }
 
+        /////////////////////////////////////////////
+        // Called when ANT message is received over the air
+        // Parameters:
+        //  antMessage - Received ANT message
+        // Returns:
+        //  none
+        /////////////////////////////////////////////
         function onMessage( antMessage )
         {
             //Parse the payload
@@ -269,6 +314,13 @@ module PongModule
             Ui.requestUpdate();
         }
 
+        /////////////////////////////////////////////
+        // Starts a new Pong game
+        // Parameters:
+        //  none
+        // Returns:
+        //  none
+        /////////////////////////////////////////////
         function startGame()
         {
             // Reset game data
@@ -278,11 +330,18 @@ module PongModule
             mPastGameState     = PONG_GAME_STATE_SEARCH;
             mPastPlayer0Score  = INVALID_PLAYER_SCORE;
             mPastPlayer1Score  = INVALID_PLAYER_SCORE;
-            mWinningPlayer = PONG_PLAYER_INVALID;
+            mWinningPlayer     = PONG_PLAYER_INVALID;
             // Open the channel
             GenericChannel.open();
         }
 
+        /////////////////////////////////////////////
+        // Stops an existing Pong game
+        // Parameters:
+        //  none
+        // Returns:
+        //  none
+        /////////////////////////////////////////////
         function stopGame()
         {
             mChosenPlayer  = PONG_PLAYER_INVALID;
@@ -291,26 +350,73 @@ module PongModule
             GenericChannel.close();
         }
 
+        /////////////////////////////////////////////
+        // Gets the current game state
+        // Parameters:
+        //  none
+        // Returns:
+        //  mGameState - Current game state (see enum)
+        /////////////////////////////////////////////
         function getGameState()
         {
             return mGameState;
         }
 
+        /////////////////////////////////////////////
+        // Gets the past game state
+        // Parameters:
+        //  none
+        // Returns:
+        //  mPastGameState - Past game state (see enum)
+        /////////////////////////////////////////////
         function getPastGameState()
         {
             return mPastGameState;
         }
 
+        /////////////////////////////////////////////
+        // Gets the chosen player
+        // Parameters:
+        //  none
+        // Returns:
+        //  mChosenPlayer - Chosen player (see enum)
+        /////////////////////////////////////////////
         function getPlayer()
         {
             return mChosenPlayer;
         }
 
+        /////////////////////////////////////////////
+        // Sets the chosen player
+        // Parameters:
+        //  player - New chosen player (see enum)
+        // Returns:
+        //  none
+        /////////////////////////////////////////////
         function setPlayer( player )
         {
-            mChosenPlayer = player;
+            if( PONG_PLAYER_0 == player )
+            {
+                mChosenPlayer = player;
+            }
+            else if( PONG_PLAYER_1 == player )
+            {
+                mChosenPlayer = player;
+            }
+            else
+            {
+                // Failsafe if an invalid player was passed in
+                mChosenPlayer = PONG_PLAYER_INVALID;
+            }
         }
 
+        /////////////////////////////////////////////
+        // Gets the past score of a player
+        // Parameters:
+        //  player - Player to get score of (see enum)
+        // Returns:
+        //  score - Past score of the player
+        /////////////////////////////////////////////
         function getPastPlayerScore( player )
         {
             var score;
@@ -325,9 +431,17 @@ module PongModule
             {
                 score = mPastPlayer1Score;
             }
+
             return score;
         }
 
+        /////////////////////////////////////////////
+        // Gets the current score of a player
+        // Parameters:
+        //  player - Player to get score of (see enum)
+        // Returns:
+        //  score - Current score of the player
+        /////////////////////////////////////////////
         function getPlayerScore( player )
         {
             var score;
@@ -342,14 +456,29 @@ module PongModule
             {
                 score = mPlayer1Score;
             }
+
             return score;
         }
 
+        /////////////////////////////////////////////
+        // Gets the winning player player
+        // Parameters:
+        //  none
+        // Returns:
+        //  mWinningPlayer - Winning player (see enum)
+        /////////////////////////////////////////////
         function getWinningPlayer()
         {
             return mWinningPlayer;
         }
 
+        /////////////////////////////////////////////
+        // Processes an ANT Idle Message. Updates self as appropriate.
+        // Parameters:
+        //  payload - Raw ANT data payload
+        // Returns:
+        //  none
+        /////////////////////////////////////////////
         hidden function processIdleMessage( payload )
         {
             // Declare variables
@@ -366,6 +495,13 @@ module PongModule
             mGameState     = PONG_GAME_STATE_IDLE;
         }
 
+        /////////////////////////////////////////////
+        // Processes an ANT Data Message. Updates self as appropriate.
+        // Parameters:
+        //  payload - Raw ANT data payload
+        // Returns:
+        //  none
+        /////////////////////////////////////////////
         hidden function processDataMessage( payload )
         {
             // Declare variables
@@ -382,6 +518,13 @@ module PongModule
             mGameState     = PONG_GAME_STATE_DATA;
         }
 
+        /////////////////////////////////////////////
+        // Processes an ANT Ready Message. Updates self as appropriate.
+        // Parameters:
+        //  payload - Raw ANT data payload
+        // Returns:
+        //  none
+        /////////////////////////////////////////////
         hidden function processReadyMessage( payload )
         {
             // Declare variables
@@ -404,6 +547,13 @@ module PongModule
             mGameState     = PONG_GAME_STATE_READY;
         }
 
+        /////////////////////////////////////////////
+        // Processes an ANT Game Message. Updates self as appropriate.
+        // Parameters:
+        //  payload - Raw ANT data payload
+        // Returns:
+        //  none
+        /////////////////////////////////////////////
         hidden function processGameMessage( payload )
         {
             // Declare variables
@@ -435,9 +585,9 @@ module PongModule
             }
             else
             {
-                mGameState     = PONG_GAME_STATE_GAME_OVER;
                 // Get winning player
                 mWinningPlayer = ( pongMessage.player0Won ) ? PONG_PLAYER_0 : PONG_PLAYER_1;
+                mGameState     = PONG_GAME_STATE_GAME_OVER;
             }
         }
     }

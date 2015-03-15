@@ -2,14 +2,16 @@ using Toybox.WatchUi as Ui;
 using Toybox.System  as Sys;
 using PongModule     as Pong;
 
-class SetupDelegate extends Ui.BehaviorDelegate {
+// Handles user events while game is being set-up
+class SetupDelegate extends Ui.BehaviorDelegate
+{
     // Stores a pointer to the game instance
     var mGame;
 
     /////////////////////////////////////////////
     // Called when object is initialized
     // Parameters:
-    //  none
+    //  game - Pointer to the game instance
     // Returns:
     //  none
     /////////////////////////////////////////////
@@ -25,7 +27,8 @@ class SetupDelegate extends Ui.BehaviorDelegate {
     // Returns:
     //  true - button event has been handled
     /////////////////////////////////////////////
-    function onMenu() {
+    function onMenu()
+    {
         // Check if a player has been selected
         if( Pong.PONG_PLAYER_INVALID == mGame.getPlayer() )
         {
