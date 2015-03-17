@@ -1,0 +1,5 @@
+<drawable-list id="logo" x="0" y="0" foreground="Gfx.COLOR_WHITE">
+    <shape type="rectangle" x="40" y="20" height="45" width="9" />
+    <shape type="rectangle" x="160" y="70" height="45" width="9" />
+    <shape type="rectangle" x="80" y="30" height="9" width="9" />
+</drawable-list>
