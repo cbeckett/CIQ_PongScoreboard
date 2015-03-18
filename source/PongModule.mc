@@ -96,15 +96,7 @@ module PongModule
     class ReadyMessage
     {
         // Message structure
-        static const MSG_ID                   = 0x03;
-        static const OFFSET_PLAYER_0_SCORE    = 1;
-        static const OFFSET_PLAYER_1_SCORE    = 2;
-        static const OFFSET_PLAYER_0_STATUS   = 3;
-        static const OFFSET_PLAYER_1_STATUS   = 4;
-        static const PLAYER_STATUS_NOT_READY  = 0x00;
-        static const PLAYER_STATUS_READY      = 0x01;
-        static const OFFSET_MESSAGE_COUNT_L   = 6;
-        static const OFFSET_MESSAGE_COUNT_H   = 7;
+        //! TODO 4.5 define the message structure
 
         // Score of Player 0
         var player0Score;
@@ -126,11 +118,7 @@ module PongModule
         /////////////////////////////////////////////
         function parse( payload )
         {
-            player0Score    = payload[OFFSET_PLAYER_0_SCORE];
-            player1Score    = payload[OFFSET_PLAYER_1_SCORE];
-            isPlayer0Ready  = ( payload[OFFSET_PLAYER_0_STATUS] & PLAYER_STATUS_READY ) ? true : false;
-            isPlayer0Ready  = ( payload[OFFSET_PLAYER_1_STATUS] & PLAYER_STATUS_READY ) ? true : false;
-            messageCount    = ( payload[OFFSET_MESSAGE_COUNT_L] | ( payload[OFFSET_MESSAGE_COUNT_H] << SIZE_OF_BYTE ) );
+            //! TODO 4.5 parse the ready message
         }
 
         /////////////////////////////////////////////
@@ -290,10 +278,7 @@ module PongModule
                 {
                     processDataMessage( payload );
                 }
-                else if( ReadyMessage.MSG_ID == messageId )
-                {
-                    processReadyMessage( payload );
-                }
+                //! TODO 4.5 Check if it is a ready message
                 else if( GameMessage.MSG_ID == messageId )
                 {
                     processGameMessage( payload );
@@ -331,6 +316,7 @@ module PongModule
             mPastPlayer0Score  = INVALID_PLAYER_SCORE;
             mPastPlayer1Score  = INVALID_PLAYER_SCORE;
             mWinningPlayer     = PONG_PLAYER_INVALID;
+
             // Open the channel
             GenericChannel.open();
         }
@@ -347,6 +333,8 @@ module PongModule
             mChosenPlayer  = PONG_PLAYER_INVALID;
             mGameState     = PONG_GAME_STATE_INVALID;
             mPastGameState = PONG_GAME_STATE_INVALID;
+
+            // Close the channel
             GenericChannel.close();
         }
 
@@ -527,24 +515,7 @@ module PongModule
         /////////////////////////////////////////////
         hidden function processReadyMessage( payload )
         {
-            // Declare variables
-            var pongMessage;
-
-            // Initialize variables
-            pongMessage = new ReadyMessage();
-
-            // Parse message
-            pongMessage.parse( payload );
-
-            // Set initial player scores
-            mPlayer0Score     = pongMessage.player0Score;
-            mPlayer1Score     = pongMessage.player1Score;
-            mPastPlayer0Score = pongMessage.player0Score;
-            mPastPlayer1Score = pongMessage.player1Score;
-
-            // Update game state
-            mPastGameState = mGameState;
-            mGameState     = PONG_GAME_STATE_READY;
+            //! TODO 4.5 process the ready message
         }
 
         /////////////////////////////////////////////

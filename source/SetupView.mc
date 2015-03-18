@@ -43,21 +43,22 @@ class SetupView extends Ui.View
 
         // Initialize variables
         font = Gfx.FONT_SMALL;
+        text = "Hello World!";
 
         // Call the parent onUpdate function to redraw the layout
         View.onUpdate(dc);
 
         // Check if a player has been selected
-        if( Pong.PONG_PLAYER_INVALID == mGame.getPlayer() )
-        {
+        //! TODO 4.2.1 if( Pong.PONG_PLAYER_INVALID == mGame.getPlayer() )
+        //! TODO 4.2.1 {
             // Player has not been selected, prompt user to select a player
-            text = "Press Menu to Select Player";
-        }
-        else
-        {
+            //! TODO 4.2.1 text = "Press Menu to Select Player";
+        //! TODO 4.2.1}
+        //! TODO 4.2.1 else
+        //! TODO 4.2.1 {
             // Player has been selected, prompt user to start game
-            text = "Press Menu to Start";
-        }
+            //! TODO 4.2.1 text = "Press Menu to Start";
+        //! TODO 4.2.1 }
 
         // Determine size of text
         textDimensions = dc.getTextDimensions(text, font);

@@ -31,10 +31,12 @@ class BoardDelegate extends Ui.BehaviorDelegate
     {
         // End game and go back to setup
         mGame.stopGame();
+
         // This is to handle a bug in the sim where a channel could not be re-opened (1.1.0)
         mGame.release();
         mGame = new Pong.PongGame();
-        Ui.switchToView( new SetupView( mGame ), new SetupDelegate( mGame ), Ui.SLIDE_LEFT );
+
+        //! TODO: 4.3 Change to SetupView here
 
         return true;
     }

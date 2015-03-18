@@ -33,11 +33,8 @@ class PlayerMenuDelegate extends Ui.MenuInputDelegate
         {
             // Player 0 selected
             mGame.setPlayer( Pong.PONG_PLAYER_0 );
-        } else if ( :item_2 == item )
-        {
-            // Player 1 selected
-            mGame.setPlayer( Pong.PONG_PLAYER_1 );
         }
+        //! TODO 4.4 Add code to allow user to choose Player 1
     }
 
 }

@@ -42,7 +42,7 @@ class PongScoreboardApp extends App.AppBase
     /////////////////////////////////////////////
     function getInitialView()
     {
-        return [ new SetupView( mGame ), new SetupDelegate( mGame ) ];
+        return [ new SetupView( I_AM_ERROR ), new SetupDelegate( mGame ) ];
     }
 
 }

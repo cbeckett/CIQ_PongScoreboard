@@ -73,8 +73,7 @@ class BoardView extends Ui.View
     /////////////////////////////////////////////
     function onPoint()
     {
-        Attention.playTone( Attention.TONE_LOUD_BEEP );
-        Attention.vibrate( mVibrateData );
+        //! TODO 4.6 Vibrate the watch and play a tone
     }
 
     /////////////////////////////////////////////
@@ -88,13 +87,13 @@ class BoardView extends Ui.View
     {
         if( ifWon )
         {
-            Attention.playTone( Attention.TONE_SUCCESS );
+            //! TODO 4.6 Play a winning tone
         }
         else
         {
-            Attention.playTone( Attention.TONE_FAILURE );
+            //! TODO 4.6 Play a losing tone
         }
-        Attention.vibrate( mVibrateData );
+        //! TODO 4.6 Vibrate the watch
     }
 
     /////////////////////////////////////////////
@@ -124,26 +123,7 @@ class BoardView extends Ui.View
             text      = "Searching...";
             textColor = Gfx.COLOR_RED;
         }
-        else if( Pong.PONG_GAME_STATE_IDLE == mGame.getGameState() )
-        {
-            text      = "Idle";
-            textColor = Gfx.COLOR_YELLOW;
-        }
-        else if( Pong.PONG_GAME_STATE_DATA == mGame.getGameState() )
-        {
-            text      = "Data";
-            textColor = Gfx.COLOR_YELLOW;
-        }
-        else if( Pong.PONG_GAME_STATE_READY == mGame.getGameState() )
-        {
-            text      = "Ready";
-            textColor = Gfx.COLOR_YELLOW;
-        }
-        else if( Pong.PONG_GAME_STATE_GAME == mGame.getGameState() )
-        {
-            text      = "Game";
-            textColor = Gfx.COLOR_GREEN;
-        }
+        //! TODO 4.2 Fill in other states here
         else if( Pong.PONG_GAME_STATE_GAME_OVER == mGame.getGameState() )
         {
             // Get winning player
@@ -176,7 +156,7 @@ class BoardView extends Ui.View
 
         // Set the text color and draw it to the display
         dc.setColor( textColor, Gfx.COLOR_TRANSPARENT );
-        dc.drawText(dc.getWidth() / 2, dc.getHeight() - textDimensions[1], font, text, Gfx.TEXT_JUSTIFY_CENTER);
+        dc.drawText(25, 50, font, text, Gfx.TEXT_JUSTIFY_CENTER);
     }
 
     /////////////////////////////////////////////
@@ -199,7 +179,7 @@ class BoardView extends Ui.View
 
         // Initialize variables
         font         = Gfx.FONT_LARGE;
-        textColor    = Gfx.COLOR_WHITE;
+        textColor    = Gfx.COLOR_BLACK;
         scoreChanged = false;
 
         // Get Player 0's score
